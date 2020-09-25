@@ -35,6 +35,8 @@ object BooleanPattern : Pattern, ScalarType {
         return JSONArrayValue(valueList)
     }
 
+    override fun isScalar(resolver: Resolver): Boolean = true
+
     override val typeAlias: String?
         get() = null
 

@@ -6,6 +6,10 @@ import run.qontract.core.value.EmptyString
 import run.qontract.core.value.Value
 
 data class DeferredPattern(override val pattern: String, val key: String? = null) : Pattern {
+    override fun isScalar(resolver: Resolver): Boolean {
+        return resolvePattern(resolver).isScalar(resolver)
+    }
+
     override fun equals(other: Any?): Boolean = when(other) {
         is DeferredPattern -> other.pattern == pattern
         else -> false

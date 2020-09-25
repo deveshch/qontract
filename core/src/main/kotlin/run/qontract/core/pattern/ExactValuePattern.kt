@@ -32,6 +32,7 @@ data class ExactValuePattern(override val pattern: Value, override val typeAlias
     override fun generate(resolver: Resolver) = pattern
     override fun newBasedOn(row: Row, resolver: Resolver): List<Pattern> = listOf(this)
     override fun parse(value: String, resolver: Resolver): Value = pattern.type().parse(value, resolver)
+    override fun isScalar(resolver: Resolver): Boolean = true
 
     override val typeName: String = pattern.displayableValue()
 

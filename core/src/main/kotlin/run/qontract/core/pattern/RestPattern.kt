@@ -28,6 +28,8 @@ data class RestPattern(override val pattern: Pattern, override val typeAlias: St
         return pattern.listOf(valueList, resolver)
     }
 
+    override fun isScalar(resolver: Resolver): Boolean = false
+
     override val typeName: String = "the rest are ${pattern.typeName}"
 }
 

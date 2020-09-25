@@ -45,6 +45,8 @@ data class AnyPattern(override val pattern: List<Pattern>, val key: String? = nu
         return pattern.single().listOf(valueList, resolver)
     }
 
+    override fun isScalar(resolver: Resolver): Boolean = pattern.all { it.isScalar(resolver) }
+
     override val typeName: String
         get() {
             return if(pattern.size == 2 && NullPattern in pattern) {

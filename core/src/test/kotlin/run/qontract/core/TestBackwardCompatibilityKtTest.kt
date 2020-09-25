@@ -39,7 +39,6 @@ Then status 200
         println(result.report())
 
         assertEquals(1, result.failureCount)
-        assertEquals(1, result.successCount)
     }
 
     @Test
@@ -77,8 +76,7 @@ Then status 200
 
         println(result.report())
 
-        assertEquals(2, result.successCount)
-        assertEquals(0, result.failureCount)
+        assertEquals(1, result.successCount)
     }
 
     @Test
@@ -113,8 +111,7 @@ Then status 200
 
         val results: Results = testBackwardCompatibility(olderContract, newerContract)
 
-        assertEquals(0, results.successCount)
-        assertEquals(2, results.failureCount)
+        assertEquals(1, results.failureCount)
     }
 
     @Test
@@ -157,7 +154,7 @@ Then status 200
         if(results.failureCount > 0)
             println(results.report())
 
-        assertEquals(2, results.successCount)
+        assertEquals(1, results.successCount)
         assertEquals(0, results.failureCount)
     }
 

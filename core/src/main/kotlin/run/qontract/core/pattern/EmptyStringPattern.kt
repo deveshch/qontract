@@ -31,6 +31,8 @@ object EmptyStringPattern : Pattern {
         return JSONArrayValue(valueList)
     }
 
+    override fun isScalar(resolver: Resolver): Boolean = false
+
     override val typeAlias: String?
         get() = null
 

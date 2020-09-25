@@ -28,6 +28,8 @@ object NullPattern : Pattern, ScalarType {
             else -> throw ContractException("Failed to parse $value: it is not null.")
         }
 
+    override fun isScalar(resolver: Resolver): Boolean = true
+
     override fun encompasses(otherPattern: Pattern, thisResolver: Resolver, otherResolver: Resolver, typeStack: TypeStack): Result {
         return encompasses(this, otherPattern, thisResolver, otherResolver, typeStack)
     }

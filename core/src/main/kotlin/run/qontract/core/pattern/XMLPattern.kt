@@ -87,6 +87,8 @@ data class XMLPattern(override val pattern: XMLTypeData = XMLTypeData(), overrid
         return Result.Success()
     }
 
+    override fun isScalar(resolver: Resolver): Boolean = false
+
     private fun expectingEmpty(sampleData: XMLNode, type: Pattern, resolver: Resolver) =
             sampleData.nodes.isEmpty() && pattern.nodes.size == 1 && (EmptyStringPattern in type.patternSet(resolver).map { resolvedHop(it, resolver) })
 
@@ -123,7 +125,7 @@ data class XMLPattern(override val pattern: XMLTypeData = XMLTypeData(), overrid
     }
 
     override fun newBasedOn(row: Row, resolver: Resolver): List<XMLPattern> {
-        return forEachKeyCombinationIn(pattern.attributes, row) { pattern ->
+        return forEachKeyCombinationIn(pattern.attributes, row, resolver) { pattern ->
             attempt(breadCrumb = this.pattern.name) {
                 newBasedOn(pattern, row, resolver).map {
                     it.mapKeys { entry -> withoutOptionality(entry.key) }

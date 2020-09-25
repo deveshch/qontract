@@ -29,6 +29,8 @@ data class URLPathPattern(override val pattern: Pattern, override val key: Strin
         return JSONArrayValue(valueList)
     }
 
+    override fun isScalar(resolver: Resolver): Boolean = false
+
     fun tryParse(token: String, resolver: Resolver): Value {
         return try {
             this.pattern.parse(token, resolver)

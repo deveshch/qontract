@@ -90,6 +90,8 @@ data class ListPattern(override val pattern: Pattern, override val typeAlias: St
         return pattern.listOf(valueList, resolverWithEmptyType)
     }
 
+    override fun isScalar(resolver: Resolver): Boolean = false
+
     override val typeName: String = "list of ${pattern.typeName}"
 }
 

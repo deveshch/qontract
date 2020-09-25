@@ -37,6 +37,8 @@ data class TabularPattern(override val pattern: Map<String, Pattern>, private va
         return Result.Success()
     }
 
+    override fun isScalar(resolver: Resolver): Boolean = false
+
     override fun listOf(valueList: List<Value>, resolver: Resolver): Value = JSONArrayValue(valueList)
 
     override fun generate(resolver: Resolver): JSONObjectValue {
@@ -48,7 +50,7 @@ data class TabularPattern(override val pattern: Map<String, Pattern>, private va
 
     override fun newBasedOn(row: Row, resolver: Resolver): List<Pattern> {
         val resolverWithNullType = withNullPattern(resolver)
-        return forEachKeyCombinationIn(pattern, row) { pattern ->
+        return forEachKeyCombinationIn(pattern, row, resolver) { pattern ->
             newBasedOn(pattern, row, resolverWithNullType)
         }.map { toTabularPattern(it) }
     }
@@ -134,27 +136,42 @@ fun <ValueType> patternList(patternCollection: Map<String, List<ValueType>>): Li
             }
 }
 
-fun <ValueType> forEachKeyCombinationIn(patternMap: Map<String, ValueType>, row: Row, creator: (Map<String, ValueType>) -> List<Map<String, ValueType>>): List<Map<String, ValueType>> =
-    keySets(patternMap.keys.toList(), row).map { keySet ->
+fun <ValueType> forEachKeyCombinationIn(patternMap: Map<String, ValueType>, row: Row, resolver: Resolver, creator: (Map<String, ValueType>) -> List<Map<String, ValueType>>): List<Map<String, ValueType>> =
+    keySets(patternMap.entries.toList(), row, resolver).map { keySet ->
         patternMap.filterKeys { key -> key in keySet }
     }.map { newPattern ->
         creator(newPattern)
     }.flatten()
 
-internal fun keySets(listOfKeys: List<String>, row: Row): List<List<String>> {
+internal fun <ValueType> keySets(listOfKeys: List<Map.Entry<String, ValueType>>, row: Row, resolver: Resolver): List<List<String>> {
     if(listOfKeys.isEmpty())
-        return listOf(listOfKeys)
+        return listOf(listOfKeys.map { it.key })
 
-    val key = listOfKeys.last()
-    val subLists = keySets(listOfKeys.dropLast(1), row)
+    val last = listOfKeys.last()
+    val key = last.key
+    val value = last.value
+    val subLists = keySets(listOfKeys.dropLast(1), row, resolver)
 
     return subLists.flatMap { subList ->
         when {
             row.containsField(withoutOptionality(key)) -> listOf(subList + key)
-            isOptional(key) -> listOf(subList, subList + key)
+            isOptional(key) -> when {
+                isScalar(value, resolver) -> listOf(subList)
+                else -> listOf(subList, subList + key)
+            }
             else -> listOf(subList + key)
         }
     }
+}
+
+fun <ValueType> isScalar(value: ValueType, resolver: Resolver): Boolean {
+    if(value is Pattern)
+        return value.isScalar(resolver)
+
+    if(value is String && isPatternToken(value))
+        return resolver.getPattern(value).isScalar(resolver)
+
+    return false
 }
 
 fun rowsToTabularPattern(rows: List<Messages.GherkinDocument.Feature.TableRow>, typeAlias: String? = null) =

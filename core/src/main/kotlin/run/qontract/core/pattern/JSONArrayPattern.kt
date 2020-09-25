@@ -89,6 +89,8 @@ data class JSONArrayPattern(override val pattern: List<Pattern> = emptyList(), o
         return JSONArrayValue(valueList)
     }
 
+    override fun isScalar(resolver: Resolver): Boolean = false
+
     override fun generate(resolver: Resolver): Value {
         val resolverWithNullType = withNullPattern(resolver)
         return JSONArrayValue(generate(pattern, resolverWithNullType))

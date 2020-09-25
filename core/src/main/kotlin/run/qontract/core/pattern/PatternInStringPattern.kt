@@ -41,5 +41,7 @@ data class PatternInStringPattern(override val pattern: Pattern = StringPattern,
         return pattern.listOf(valueList, resolver)
     }
 
+    override fun isScalar(resolver: Resolver): Boolean = pattern.isScalar(resolver)
+
     override val typeName: String = "${pattern.typeName} in string"
 }

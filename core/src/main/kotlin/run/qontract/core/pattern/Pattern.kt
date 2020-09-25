@@ -29,6 +29,8 @@ interface Pattern {
 
     fun listOf(valueList: List<Value>, resolver: Resolver): Value
 
+    fun isScalar(resolver: Resolver): Boolean
+
     val typeAlias: String?
     val typeName: String
     val pattern: Any

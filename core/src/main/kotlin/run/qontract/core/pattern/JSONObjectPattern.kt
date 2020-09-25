@@ -27,6 +27,8 @@ data class JSONObjectPattern(override val pattern: Map<String, Pattern> = emptyM
         else -> false
     }
 
+    override fun isScalar(resolver: Resolver): Boolean = false
+
     override fun encompasses(otherPattern: Pattern, thisResolver: Resolver, otherResolver: Resolver, typeStack: TypeStack): Result {
         val thisResolverWithNullType = withNullPattern(thisResolver)
         val otherResolverWithNullType = withNullPattern(otherResolver)
@@ -71,7 +73,7 @@ data class JSONObjectPattern(override val pattern: Map<String, Pattern> = emptyM
 
     override fun newBasedOn(row: Row, resolver: Resolver): List<JSONObjectPattern> {
         val resolverWithNullType = withNullPattern(resolver)
-        return forEachKeyCombinationIn(pattern.minus("..."), row) { pattern ->
+        return forEachKeyCombinationIn(pattern.minus("..."), row, resolver) { pattern ->
             newBasedOn(pattern, row, resolverWithNullType)
         }.map { toJSONObjectPattern(it) }
     }

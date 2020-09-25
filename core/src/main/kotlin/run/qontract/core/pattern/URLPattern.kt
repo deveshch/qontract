@@ -40,5 +40,7 @@ data class URLPattern(val scheme: URLScheme = URLScheme.HTTPS, override val type
         return JSONArrayValue(valueList)
     }
 
+    override fun isScalar(resolver: Resolver): Boolean = true
+
     override val typeName: String = "url"
 }
