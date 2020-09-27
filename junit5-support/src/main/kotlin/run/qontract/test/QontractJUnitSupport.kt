@@ -5,10 +5,7 @@ import org.junit.jupiter.api.TestFactory
 import org.opentest4j.TestAbortedException
 import run.qontract.core.*
 import run.qontract.core.Constants.Companion.DEFAULT_QONTRACT_CONFIG_FILE_NAME
-import run.qontract.core.pattern.ContractException
-import run.qontract.core.pattern.Examples
-import run.qontract.core.pattern.Row
-import run.qontract.core.pattern.parsedValue
+import run.qontract.core.pattern.*
 import run.qontract.core.utilities.*
 import run.qontract.core.value.JSONArrayValue
 import run.qontract.core.value.JSONObjectValue
@@ -133,7 +130,7 @@ open class QontractJUnitSupport {
             else -> emptyList()
         }
 
-        return feature.generateTestScenarios(suggestions)
+        return feature.generateTestScenarios(suggestions, ::skipOptionalWithoutExample)
     }
 
     private fun suggestionsFromFile(suggestionsPath: String): List<Scenario> {

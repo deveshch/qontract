@@ -108,8 +108,8 @@ data class Scenario(val name: String, val httpRequestPattern: HttpRequestPattern
         }
     }
 
-    private fun newBasedOn(row: Row): List<Scenario> {
-        val resolver = Resolver(expectedFacts, false, patterns)
+    private fun newBasedOn(row: Row, optionalGeneratorPredicate: OptionalGeneratorPredicate = ::generateOptionalWithoutExample): List<Scenario> {
+        val resolver = Resolver(expectedFacts, false, patterns).copy(optionalGenerator = optionalGeneratorPredicate)
 
         val newExpectedServerState = newExpectedServerStateBasedOn(row, expectedFacts, fixtures, resolver)
 
@@ -125,12 +125,12 @@ data class Scenario(val name: String, val httpRequestPattern: HttpRequestPattern
         }
     }
 
-    fun generateTestScenarios(): List<Scenario> =
+    fun generateTestScenarios(optionalGeneratorPredicate: OptionalGeneratorPredicate = ::generateOptionalWithoutExample): List<Scenario> =
         scenarioBreadCrumb(this) {
             when (examples.size) {
                 0 -> listOf(Row())
                 else -> examples.flatMap { it.rows }
-            }.flatMap { row -> newBasedOn(row) }
+            }.flatMap { row -> newBasedOn(row, optionalGeneratorPredicate) }
         }
 
     val resolver: Resolver = Resolver(newPatterns = patterns)

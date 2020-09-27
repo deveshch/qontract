@@ -7,6 +7,7 @@ import io.cucumber.messages.IdGenerator.Incrementing
 import io.cucumber.messages.Messages.GherkinDocument
 import run.qontract.core.pattern.*
 import run.qontract.core.pattern.Examples.Companion.examplesFrom
+import run.qontract.core.utilities.exceptionCauseMessage
 import run.qontract.core.utilities.jsonStringToValueMap
 import run.qontract.core.value.*
 import run.qontract.core.value.UseExampleDeclarations
@@ -91,7 +92,20 @@ data class Feature(val scenarios: List<Scenario> = emptyList(), private var serv
 
     fun executeTests(testExecutorFn: TestExecutor, suggestions: List<Scenario> = emptyList()): Results =
             generateTestScenarios(suggestions).fold(Results()) { results, scenario ->
-                Results(results = results.results.plus(executeTest(scenario, testExecutorFn)).toMutableList())
+                val request = scenario.generateHttpRequest()
+                Results(results = results.results.plus(try {
+                    testExecutorFn.setServerState(scenario.serverState)
+
+                    val response = testExecutorFn.execute(request)
+
+                    when (response.headers.getOrDefault(QONTRACT_RESULT_HEADER, "success")) {
+                        "failure" -> Result.Failure(response.body.toStringValue()).updateScenario(scenario)
+                        else -> scenario.matches(response)
+                    }
+                } catch (exception: Throwable) {
+                    Result.Failure(exceptionCauseMessage(exception))
+                            .also { failure -> failure.updateScenario(scenario) }
+                }).toMutableList())
             }
 
     fun setServerState(serverState: Map<String, Value>) {
@@ -130,8 +144,8 @@ data class Feature(val scenarios: List<Scenario> = emptyList(), private var serv
         }
     }
 
-    fun generateTestScenarios(suggestions: List<Scenario>): List<Scenario> =
-        scenarios.map { it.newBasedOn(suggestions) }.flatMap { it.generateTestScenarios() }
+    fun generateTestScenarios(suggestions: List<Scenario>, optionalGeneratorPredicate: OptionalGeneratorPredicate = ::generateOptionalWithoutExample): List<Scenario> =
+        scenarios.map { it.newBasedOn(suggestions) }.flatMap { it.generateTestScenarios(optionalGeneratorPredicate = optionalGeneratorPredicate) }
 
     fun generateTestScenarios(): List<Scenario> =
         scenarios.flatMap { scenario ->

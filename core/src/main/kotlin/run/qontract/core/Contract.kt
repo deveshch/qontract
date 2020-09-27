@@ -1,8 +1,7 @@
 package run.qontract.core
 
 import run.qontract.core.pattern.ContractException
-import run.qontract.core.utilities.contractFilePath
-import run.qontract.core.utilities.readFile
+import run.qontract.core.utilities.exceptionCauseMessage
 import run.qontract.stub.HttpStub
 import run.qontract.test.HttpClient
 
@@ -25,7 +24,22 @@ data class Contract(val contractGherkin: String) {
 
         contractBehaviour.generateTestScenarios(emptyList()).fold(Results()) { results, scenario ->
             when(val kafkaMessagePattern = scenario.kafkaMessagePattern) {
-                null -> Results(results = results.results.plus(executeTest(scenario, httpClient)).toMutableList())
+                null -> {
+                    val request = scenario.generateHttpRequest()
+                    Results(results = results.results.plus(try {
+                        httpClient.setServerState(scenario.serverState)
+
+                        val response = httpClient.execute(request)
+
+                        when (response.headers.getOrDefault(QONTRACT_RESULT_HEADER, "success")) {
+                            "failure" -> Result.Failure(response.body.toStringValue()).updateScenario(scenario)
+                            else -> scenario.matches(response)
+                        }
+                    } catch (exception: Throwable) {
+                        Result.Failure(exceptionCauseMessage(exception))
+                                .also { failure -> failure.updateScenario(scenario) }
+                    }).toMutableList())
+                }
                 else -> {
                     val message = """KAFKA MESSAGE
 ${kafkaMessagePattern.generate(scenario.resolver).toDisplayableString()}""".trimMargin().prependIndent("| ")

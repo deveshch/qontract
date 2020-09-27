@@ -151,12 +151,21 @@ internal fun <ValueType> keySets(listOfKeys: List<Map.Entry<String, ValueType>>,
     return subLists.flatMap { subList ->
         when {
             row.containsField(withoutOptionality(key)) -> listOf(subList + key)
-            isOptional(key) -> when {
-                isScalar(value, resolver) -> listOf(subList)
-                else -> listOf(subList, subList + key)
-            }
+            isOptional(key) -> resolver.optionalGenerator(value, resolver, subList, key)
             else -> listOf(subList + key)
         }
+    }
+}
+
+typealias OptionalGeneratorPredicate = (value: Any?, resolver: Resolver, subList: List<String>, key: String) -> List<List<String>>
+
+internal fun generateOptionalWithoutExample(value: Any?, resolver: Resolver, subList: List<String>, key: String): List<List<String>> =
+        listOf(subList, subList + key)
+
+fun skipOptionalWithoutExample(value: Any?, resolver: Resolver, subList: List<String>, key: String): List<List<String>> {
+    return when {
+        isScalar(value, resolver) -> listOf(subList)
+        else -> listOf(subList, subList + key)
     }
 }
 

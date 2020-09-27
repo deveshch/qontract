@@ -10,7 +10,7 @@ sealed class KeyError
 data class MissingKeyError(val name: String) : KeyError()
 data class UnexpectedKeyError(val name: String) : KeyError()
 
-data class Resolver(val factStore: FactStore = CheckFacts(), val mockMode: Boolean = false, val newPatterns: Map<String, Pattern> = emptyMap(), val findMissingKey: (pattern: Map<String, Any>, actual: Map<String, Any>, UnexpectedKeyCheck) -> KeyError? = ::checkOnlyPatternKeys ) {
+data class Resolver(val factStore: FactStore = CheckFacts(), val mockMode: Boolean = false, val newPatterns: Map<String, Pattern> = emptyMap(), val findMissingKey: (pattern: Map<String, Any>, actual: Map<String, Any>, UnexpectedKeyCheck) -> KeyError? = ::checkOnlyPatternKeys, val optionalGenerator: OptionalGeneratorPredicate = ::generateOptionalWithoutExample) {
     constructor(facts: Map<String, Value> = emptyMap(), mockMode: Boolean = false, newPatterns: Map<String, Pattern> = emptyMap()) : this(CheckFacts(facts), mockMode, newPatterns)
     constructor() : this(emptyMap(), false)
 
