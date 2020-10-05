@@ -9,4 +9,4 @@ gen/*
 *.class
 **/.zookeeper/*
 core/out
-**/core/target/*
+**/target/**

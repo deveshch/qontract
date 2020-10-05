@@ -4,6 +4,15 @@ plugins {
     id 'org.jetbrains.kotlin.jvm'
     id 'org.jetbrains.kotlin.plugin.serialization'
     id 'signing'
+    id 'info.solidsoft.pitest' version '1.5.2'
+}
+
+pitest {
+    targetClasses = ['run.qontract.*']  //by default "${project.group}.*"
+    threads = 4
+    outputFormats = ['XML', 'HTML']
+    timestampedReports = false
+    junit5PluginVersion = '0.12'
 }
 
 apply plugin: "jacoco"
@@ -29,6 +38,8 @@ def jgit_version = "5.9.0.202009080501-r"
 def junit_version = "5.7.0"
 def testcontainers_version = "1.14.3"
 
+configurations.maybeCreate("pitest")
+
 dependencies {
     implementation 'io.cucumber:gherkin:15.0.2'
     implementation 'org.jetbrains.kotlin:kotlin-reflect'
@@ -48,6 +59,8 @@ dependencies {
     implementation 'org.apache.kafka:kafka-clients:2.6.0'
 
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junit_version"
+
+    pitest 'org.pitest:pitest-junit5-plugin:0.12'
 
     testImplementation 'com.github.tomakehurst:wiremock-jre8:2.26.0'
     testImplementation 'org.assertj:assertj-core:3.17.2'
