@@ -14,7 +14,7 @@ jacoco {
 }
 
 application {
-    mainClassName = "application.QontractApplication"
+    mainClassName = "application.SpecmaticApplication"
 }
 
 jar {
@@ -22,7 +22,7 @@ jar {
 }
 
 shadowJar {
-    archiveFileName = "qontract.${archiveExtension.get()}"
+    archiveFileName = "specmatic.${archiveExtension.get()}"
     from '../version.properties'
 }
 
@@ -37,9 +37,9 @@ repositories {
     }
 }
 
-def ktor_version = "1.4.3"
+def ktor_version = "1.5.3"
 def junit_version = "5.7.1"
-def jgit_version = "5.10.0.202012080955-r"
+def jgit_version = "5.11.0.202103091610-r"
 
 dependencies {
     implementation('info.picocli:picocli-spring-boot-starter:4.6.1') {
@@ -68,11 +68,11 @@ dependencies {
 
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junit_version"
 
-    testImplementation('org.springframework.boot:spring-boot-starter-test:2.4.3') {
+    testImplementation('org.springframework.boot:spring-boot-starter-test:2.4.4') {
         exclude group: 'ch.qos.logback', module: 'logback-classic'
         exclude module: 'mockito-core'
     }
-    testImplementation 'io.mockk:mockk:1.10.6'
+    testImplementation 'io.mockk:mockk:1.11.0'
     testImplementation('com.ninja-squad:springmockk:3.0.1') {
         exclude group: 'ch.qos.logback', module: 'logback-classic'
     }
@@ -96,7 +96,7 @@ jacocoTestReport {
     }
 }
 
-group = 'run.qontract'
+group = 'in.specmatic'
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
     kotlinOptions {

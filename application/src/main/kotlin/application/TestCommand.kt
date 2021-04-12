@@ -1,6 +1,5 @@
 package application
 
-import run.qontract.test.QontractJUnitSupport
 import application.test.ContractExecutionListener
 import org.junit.platform.engine.discovery.DiscoverySelectors.selectClass
 import org.junit.platform.launcher.Launcher
@@ -10,14 +9,16 @@ import org.springframework.beans.factory.annotation.Autowired
 import picocli.CommandLine
 import picocli.CommandLine.Command
 import picocli.CommandLine.Option
-import run.qontract.core.Constants
-import run.qontract.core.utilities.*
-import run.qontract.test.QontractJUnitSupport.Companion.CONTRACT_PATHS
-import run.qontract.test.QontractJUnitSupport.Companion.HOST
-import run.qontract.test.QontractJUnitSupport.Companion.INLINE_SUGGESTIONS
-import run.qontract.test.QontractJUnitSupport.Companion.PORT
-import run.qontract.test.QontractJUnitSupport.Companion.SUGGESTIONS_PATH
-import run.qontract.test.QontractJUnitSupport.Companion.TIMEOUT
+import `in`.specmatic.core.Constants
+import `in`.specmatic.core.utilities.exceptionCauseMessage
+import `in`.specmatic.test.SpecmaticJUnitSupport
+import `in`.specmatic.test.SpecmaticJUnitSupport.Companion.CONTRACT_PATHS
+import `in`.specmatic.test.SpecmaticJUnitSupport.Companion.HOST
+import `in`.specmatic.test.SpecmaticJUnitSupport.Companion.INLINE_SUGGESTIONS
+import `in`.specmatic.test.SpecmaticJUnitSupport.Companion.PORT
+import `in`.specmatic.test.SpecmaticJUnitSupport.Companion.SUGGESTIONS_PATH
+import `in`.specmatic.test.SpecmaticJUnitSupport.Companion.ENV_NAME
+import `in`.specmatic.test.SpecmaticJUnitSupport.Companion.TIMEOUT
 import java.io.PrintWriter
 import java.nio.file.Paths
 import java.util.concurrent.Callable
@@ -46,6 +47,9 @@ class TestCommand : Callable<Unit> {
 
     @Option(names = ["--suggestions"], description = ["A json value with scenario name and multiple suggestions"], defaultValue = "")
     var suggestions: String = ""
+
+    @Option(names = ["--env"], description = ["Environment name"])
+    var envName: String = ""
 
     @Option(names = ["--https"], description = ["Use https instead of the default http"], required = false)
     var useHttps: Boolean = false
@@ -91,6 +95,7 @@ class TestCommand : Callable<Unit> {
         System.setProperty(TIMEOUT, timeout.toString())
         System.setProperty(SUGGESTIONS_PATH, suggestionsPath)
         System.setProperty(INLINE_SUGGESTIONS, suggestions)
+        System.setProperty(ENV_NAME, envName)
         System.setProperty("protocol", protocol)
 
         System.setProperty("kafkaBootstrapServers", kafkaBootstrapServers)
@@ -102,7 +107,7 @@ class TestCommand : Callable<Unit> {
             System.setProperty("kafkaPort", kafkaPort.toString())
 
         val request: LauncherDiscoveryRequest = LauncherDiscoveryRequestBuilder.request()
-                .selectors(selectClass(QontractJUnitSupport::class.java))
+                .selectors(selectClass(SpecmaticJUnitSupport::class.java))
                 .build()
         junitLauncher.discover(request)
         val contractExecutionListener = ContractExecutionListener()

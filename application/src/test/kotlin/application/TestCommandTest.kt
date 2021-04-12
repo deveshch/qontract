@@ -16,14 +16,14 @@ import org.junit.platform.launcher.LauncherDiscoveryRequest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import picocli.CommandLine
-import run.qontract.test.QontractJUnitSupport
-import run.qontract.test.QontractJUnitSupport.Companion.CONTRACT_PATHS
-import run.qontract.test.QontractJUnitSupport.Companion.HOST
-import run.qontract.test.QontractJUnitSupport.Companion.PORT
-import run.qontract.test.QontractJUnitSupport.Companion.TIMEOUT
+import `in`.specmatic.core.CONTRACT_EXTENSION
+import `in`.specmatic.test.SpecmaticJUnitSupport.Companion.CONTRACT_PATHS
+import `in`.specmatic.test.SpecmaticJUnitSupport.Companion.HOST
+import `in`.specmatic.test.SpecmaticJUnitSupport.Companion.PORT
+import `in`.specmatic.test.SpecmaticJUnitSupport.Companion.TIMEOUT
 import java.util.stream.Stream
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE, classes = arrayOf(QontractApplication::class, TestCommand::class))
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE, classes = arrayOf(SpecmaticApplication::class, TestCommand::class))
 internal class TestCommandTest {
     @MockkBean
     lateinit var qontractConfig: QontractConfig
@@ -37,8 +37,8 @@ internal class TestCommandTest {
     @Autowired
     lateinit var testCommand: TestCommand
 
-    private val contractsToBeRunAsTests = arrayListOf("/config/path/to/contract_1.qontract",
-            "/config/path/to/another_contract_1.qontract")
+    private val contractsToBeRunAsTests = arrayListOf("/config/path/to/contract_1.$CONTRACT_EXTENSION",
+            "/config/path/to/another_contract_1.$CONTRACT_EXTENSION")
 
     @BeforeEach
     fun `clean up test command`() {
@@ -68,7 +68,7 @@ internal class TestCommandTest {
         every { junitLauncher.discover(any()) }.returns(mockk())
         every { junitLauncher.registerTestExecutionListeners(any<ContractExecutionListener>()) }.returns(mockk())
 
-        CommandLine(testCommand, factory).execute("api_1.qontract")
+        CommandLine(testCommand, factory).execute("api_1.$CONTRACT_EXTENSION")
 
         verify(exactly = 1) { junitLauncher.discover(any()) }
         verify(exactly = 1) { junitLauncher.registerTestExecutionListeners(any<ContractExecutionListener>()) }
@@ -81,7 +81,7 @@ internal class TestCommandTest {
         every { junitLauncher.registerTestExecutionListeners(any<ContractExecutionListener>()) }.returns(mockk())
         every { junitLauncher.registerTestExecutionListeners(any<org.junit.platform.reporting.legacy.xml.LegacyXmlReportGeneratingListener>()) }.returns(mockk())
 
-        CommandLine(testCommand, factory).execute("api_1.qontract", "--junitReportDir", "reports/junit")
+        CommandLine(testCommand, factory).execute("api_1.$CONTRACT_EXTENSION", "--junitReportDir", "reports/junit")
 
         verify(exactly = 1) { junitLauncher.discover(any()) }
         verify { junitLauncher.registerTestExecutionListeners(any<ContractExecutionListener>()) }
@@ -109,7 +109,7 @@ internal class TestCommandTest {
         fun commandLineArguments(): Stream<Arguments> = Stream.of(
                 Arguments.of("--port", "9999", PORT, "9999"),
                 Arguments.of("--host", "10.10.10.10", HOST, "10.10.10.10"),
-                Arguments.of("--timeout", "33", TIMEOUT, "33")
+                Arguments.of("--timeout", "33", TIMEOUT, "33"),
         )
     }
 

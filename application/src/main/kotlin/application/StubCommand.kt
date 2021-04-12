@@ -4,21 +4,19 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
 import org.springframework.stereotype.Component
 import picocli.CommandLine.*
-import run.qontract.LogTail
-import run.qontract.consoleLog
-import run.qontract.core.*
-import run.qontract.core.Constants.Companion.DEFAULT_HTTP_STUB_HOST
-import run.qontract.core.Constants.Companion.DEFAULT_HTTP_STUB_PORT
-import run.qontract.core.Constants.Companion.DEFAULT_QONTRACT_CONFIG_IN_CURRENT_DIRECTORY
-import run.qontract.core.pattern.ContractException
-import run.qontract.core.utilities.exceptionCauseMessage
-import run.qontract.core.utilities.exitWithMessage
-import run.qontract.mock.NoMatchingScenario
-import run.qontract.mock.ScenarioStub
-import run.qontract.stub.*
+import `in`.specmatic.LogTail
+import `in`.specmatic.consoleLog
+import `in`.specmatic.core.*
+import `in`.specmatic.core.Constants.Companion.DEFAULT_HTTP_STUB_HOST
+import `in`.specmatic.core.Constants.Companion.DEFAULT_HTTP_STUB_PORT
+import `in`.specmatic.core.Constants.Companion.DEFAULT_QONTRACT_CONFIG_IN_CURRENT_DIRECTORY
+import `in`.specmatic.core.pattern.ContractException
+import `in`.specmatic.core.utilities.exceptionCauseMessage
+import `in`.specmatic.core.utilities.exitWithMessage
+import `in`.specmatic.mock.NoMatchingScenario
+import `in`.specmatic.mock.ScenarioStub
+import `in`.specmatic.stub.*
 import java.util.concurrent.Callable
-
-data class CertInfo(val keyStoreFile: String = "", val keyStoreDir: String = "", val keyStorePassword: String = "forgotten", val keyStoreAlias: String = "qontractproxy", val keyPassword: String = "forgotten")
 
 @Command(name = "stub",
         mixinStandardHelpOptions = true,
@@ -72,14 +70,14 @@ class StubCommand : Callable<Unit> {
     @Option(names = ["--httpsKeyStore"], description = ["Run the proxy on https using a key in this store"])
     var keyStoreFile = ""
 
-    @Option(names = ["--httpsKeyStoreDir"], description = ["Run the proxy on https, create a store named qontract.jks in this directory"])
+    @Option(names = ["--httpsKeyStoreDir"], description = ["Run the proxy on https, create a store named $APPLICATION_NAME_LOWER_CASE.jks in this directory"])
     var keyStoreDir = ""
 
     @Option(names = ["--httpsKeyStorePassword"], description = ["Run the proxy on https, password for pre-existing key store"])
     var keyStorePassword = "forgotten"
 
     @Option(names = ["--httpsKeyAlias"], description = ["Run the proxy on https using a key by this name"])
-    var keyStoreAlias = "qontractproxy"
+    var keyStoreAlias = "${APPLICATION_NAME_LOWER_CASE}proxy"
 
     @Option(names = ["--httpsPassword"], description = ["Key password if any"])
     var keyPassword = "forgotten"
@@ -170,10 +168,10 @@ class StubCommand : Callable<Unit> {
 }
 
 internal fun validateQontractFileExtensions(contractPaths: List<String>, fileOperations: FileOperations) {
-    contractPaths.filter { fileOperations.isFile(it) && fileOperations.extensionIsNot(it, QONTRACT_EXTENSION) }.let {
+    contractPaths.filter { fileOperations.isFile(it) && fileOperations.extensionIsNot(it, CONTRACT_EXTENSIONS) }.let {
         if (it.isNotEmpty()) {
             val files = it.joinToString("\n")
-            exitWithMessage("The following files do not end with $QONTRACT_EXTENSION and cannot be used:\n$files")
+            exitWithMessage("The following files do not end with $CONTRACT_EXTENSION and cannot be used:\n$files")
         }
     }
 }
@@ -246,7 +244,7 @@ class HTTPStubEngine {
                     it.copy(scenarios = httpScenarios)
                 }
 
-                val keyStoreData = getHttpsCert(certInfo.keyStoreFile, certInfo.keyStoreDir, certInfo.keyStorePassword, certInfo.keyStoreAlias, certInfo.keyPassword)
+                val keyStoreData = certInfo.getHttpsCert()
                 HttpStub(httpFeatures, httpExpectations, host, port, ::consoleLog, strictMode, keyStoreData, passThroughTargetBase = passThroughTargetBase, httpClientFactory = httpClientFactory).also {
                     val protocol = if (keyStoreData != null) "https" else "http"
                     consoleLog("Stub server is running on ${protocol}://$host:$port. Ctrl + C to stop.")

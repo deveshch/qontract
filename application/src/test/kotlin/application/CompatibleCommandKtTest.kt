@@ -6,11 +6,12 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
-import run.qontract.core.Result
-import run.qontract.core.Results
-import run.qontract.core.git.GitCommand
+import `in`.specmatic.core.CONTRACT_EXTENSION
+import `in`.specmatic.core.Result
+import `in`.specmatic.core.Results
+import `in`.specmatic.core.git.GitCommand
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE, classes = [QontractApplication::class, CompatibleCommand::class])
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE, classes = [SpecmaticApplication::class, CompatibleCommand::class])
 internal class CompatibleCommandKtTest {
     val trivialContract = """
                     Feature: Test
@@ -27,13 +28,13 @@ internal class CompatibleCommandKtTest {
 
     @BeforeEach
     fun testSetup() {
-        every { fileOperations.read("/Users/fakeuser/newer.qontract") }.returns(trivialContract)
+        every { fileOperations.read("/Users/fakeuser/newer.$CONTRACT_EXTENSION") }.returns(trivialContract)
     }
 
     @Test
     fun `error when contract file path is not in git repo`() {
         every { gitCommand.fileIsInGitDir(any()) }.returns(false)
-        val outcome = getOlderFeature("/not/in/git.qontract", gitCommand)
+        val outcome = getOlderFeature("/not/in/git.$CONTRACT_EXTENSION", gitCommand)
         assertThat(outcome.result).isNull()
         assertThat(outcome.errorMessage).isEqualTo("Older contract file must be provided, or the file must be in a git directory")
     }
@@ -44,19 +45,23 @@ internal class CompatibleCommandKtTest {
             override fun fileIsInGitDir(newerContractPath: String): Boolean = true
 
             override fun relativeGitPath(newerContractPath: String): Pair<GitCommand, String> {
-                assertThat(newerContractPath).isEqualTo("/Users/fakeuser/newer.qontract")
-                return Pair(this, "newer.qontract")
+                assertThat(newerContractPath).isEqualTo("/Users/fakeuser/newer.$CONTRACT_EXTENSION")
+                return Pair(this, "newer.$CONTRACT_EXTENSION")
             }
 
             override fun show(treeish: String, relativePath: String): String {
                 assertThat(treeish).isEqualTo("HEAD")
-                assertThat(relativePath).isEqualTo("newer.qontract")
+                assertThat(relativePath).isEqualTo("newer.$CONTRACT_EXTENSION")
 
                 return trivialContract
             }
         }
 
-        val outcome = backwardCompatibleFile("/Users/fakeuser/newer.qontract", fileOperations, fakeGit)
+        val outcome = backwardCompatibleFile(
+            "/Users/fakeuser/newer.$CONTRACT_EXTENSION",
+            fileOperations,
+            fakeGit
+        )
         assertThat(outcome.result?.successCount).isOne()
         assertThat(outcome.result?.success()).isTrue()
     }
@@ -67,13 +72,13 @@ internal class CompatibleCommandKtTest {
             override fun fileIsInGitDir(newerContractPath: String): Boolean = true
 
             override fun relativeGitPath(newerContractPath: String): Pair<GitCommand, String> {
-                assertThat(newerContractPath).isEqualTo("/Users/fakeuser/newer.qontract")
-                return Pair(this, "newer.qontract")
+                assertThat(newerContractPath).isEqualTo("/Users/fakeuser/newer.$CONTRACT_EXTENSION")
+                return Pair(this, "newer.$CONTRACT_EXTENSION")
             }
 
             override fun show(treeish: String, relativePath: String): String {
                 assertThat(treeish).isEqualTo("HEAD")
-                assertThat(relativePath).isEqualTo("newer.qontract")
+                assertThat(relativePath).isEqualTo("newer.$CONTRACT_EXTENSION")
 
                 return """
                     Feature: Test
@@ -84,7 +89,11 @@ internal class CompatibleCommandKtTest {
             }
         }
 
-        val outcome = backwardCompatibleFile("/Users/fakeuser/newer.qontract", fileOperations, fakeGit)
+        val outcome = backwardCompatibleFile(
+            "/Users/fakeuser/newer.$CONTRACT_EXTENSION",
+            fileOperations,
+            fakeGit
+        )
         assertThat(outcome.result?.successCount).isZero()
         assertThat(outcome.result?.success()).isFalse()
     }
@@ -97,19 +106,24 @@ internal class CompatibleCommandKtTest {
             override fun fileIsInGitDir(newerContractPath: String): Boolean = true
 
             override fun relativeGitPath(newerContractPath: String): Pair<GitCommand, String> {
-                assertThat(newerContractPath).isEqualTo("/Users/fakeuser/newer.qontract")
-                return Pair(this, "newer.qontract")
+                assertThat(newerContractPath).isEqualTo("/Users/fakeuser/newer.$CONTRACT_EXTENSION")
+                return Pair(this, "newer.$CONTRACT_EXTENSION")
             }
 
             override fun show(treeish: String, relativePath: String): String {
                 commitsRequested.add(treeish)
-                assertThat(relativePath).isEqualTo("newer.qontract")
+                assertThat(relativePath).isEqualTo("newer.$CONTRACT_EXTENSION")
 
                 return trivialContract
             }
         }
 
-        val outcome = backwardCompatibleCommit("/Users/fakeuser/newer.qontract", "HEAD", "HEAD^1", fakeGit)
+        val outcome = backwardCompatibleCommit(
+            "/Users/fakeuser/newer.$CONTRACT_EXTENSION",
+            "HEAD",
+            "HEAD^1",
+            fakeGit
+        )
 
         assertThat(commitsRequested.toList().sorted()).isEqualTo(listOf("HEAD", "HEAD^1"))
 
@@ -125,13 +139,13 @@ internal class CompatibleCommandKtTest {
             override fun fileIsInGitDir(newerContractPath: String): Boolean = true
 
             override fun relativeGitPath(newerContractPath: String): Pair<GitCommand, String> {
-                assertThat(newerContractPath).isEqualTo("/Users/fakeuser/newer.qontract")
-                return Pair(this, "newer.qontract")
+                assertThat(newerContractPath).isEqualTo("/Users/fakeuser/newer.$CONTRACT_EXTENSION")
+                return Pair(this, "newer.$CONTRACT_EXTENSION")
             }
 
             override fun show(treeish: String, relativePath: String): String {
                 commitsRequested.add(treeish)
-                assertThat(relativePath).isEqualTo("newer.qontract")
+                assertThat(relativePath).isEqualTo("newer.$CONTRACT_EXTENSION")
 
                 return when(treeish) {
                     "HEAD" -> trivialContract
@@ -140,10 +154,15 @@ internal class CompatibleCommandKtTest {
             }
         }
 
-        val outcome = backwardCompatibleCommit("/Users/fakeuser/newer.qontract", "HEAD", "HEAD^1", fakeGit)
+        val outcome = backwardCompatibleCommit(
+            "/Users/fakeuser/newer.$CONTRACT_EXTENSION",
+            "HEAD",
+            "HEAD^1",
+            fakeGit
+        )
 
-        assertThat(outcome.errorMessage).isEqualTo("""Could not load HEAD^1:/Users/fakeuser/newer.qontract because of error:
-Error: Only one commit
+        assertThat(outcome.errorMessage).isEqualTo("""Could not load HEAD^1:/Users/fakeuser/newer.$CONTRACT_EXTENSION because of error:
+Only one commit
         """.trimMargin())
         assertThat(outcome.result).isNull()
     }

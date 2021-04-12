@@ -2,24 +2,24 @@ package application
 
 import picocli.CommandLine
 import picocli.CommandLine.*
-import run.qontract.conversions.postmanCollectionToGherkin
-import run.qontract.conversions.runTests
-import run.qontract.conversions.toFragment
-import run.qontract.core.*
-import run.qontract.core.utilities.jsonStringToValueMap
-import run.qontract.core.utilities.parseXML
-import run.qontract.core.value.toXMLNode
-import run.qontract.core.wsdl.WSDL
-import run.qontract.mock.mockFromJSON
+import `in`.specmatic.conversions.postmanCollectionToGherkin
+import `in`.specmatic.conversions.runTests
+import `in`.specmatic.conversions.toFragment
+import `in`.specmatic.core.*
+import `in`.specmatic.core.utilities.jsonStringToValueMap
+import `in`.specmatic.core.utilities.parseXML
+import `in`.specmatic.core.value.toXMLNode
+import `in`.specmatic.core.wsdl.parser.WSDL
+import `in`.specmatic.mock.mockFromJSON
 import java.io.File
 import java.util.concurrent.Callable
 
 @Command(name = "import",
         mixinStandardHelpOptions = true,
-        description = ["Converts a files of various formats into their respective Qontract equivalents"])
+        description = ["Converts a files of various formats into their respective $APPLICATION_NAME equivalents"])
 class ImportCommand : Callable<Unit> {
     @Command(name="stub")
-    fun stub(@Parameters(description = [ "Converts a stub json file to a Qontract file" ], index = "0") path: String, @Option(names = ["-o", "--output"], description = [ "Write the contract into this file"], required = false) outputFile: String?) {
+    fun stub(@Parameters(description = [ "Converts a stub json file to a $APPLICATION_NAME file" ], index = "0") path: String, @Option(names = ["-o", "--output"], description = [ "Write the contract into this file"], required = false) outputFile: String?) {
         val inputFile = File(path)
         val stub = mockFromJSON(jsonStringToValueMap(inputFile.readText()))
         val gherkin = toGherkinFeature(NamedStub("New scenario", stub))
@@ -28,7 +28,7 @@ class ImportCommand : Callable<Unit> {
     }
 
     @Command(name="postman")
-    fun postman(@Parameters(description = [ "Converts a postman collection to a Qontract file" ], index = "0") path: String, @Option(names = ["-o", "--output"], description = [ "Write the contract into this file"], required = false) outputFile: String?) {
+    fun postman(@Parameters(description = [ "Converts a postman collection to a $APPLICATION_NAME file" ], index = "0") path: String, @Option(names = ["-o", "--output"], description = [ "Write the contract into this file"], required = false) outputFile: String?) {
         val inputFile = File(path)
         val contracts = postmanCollectionToGherkin(inputFile.readText())
 
@@ -46,7 +46,7 @@ class ImportCommand : Callable<Unit> {
     }
 
     @Command(name="wsdl")
-    fun wsdl(@Parameters(description = [ "Converts a WSDL file to a Qontract file" ], index = "0") path: String, @Option(names = ["-o", "--output"], description = [ "Write the contract into this file"], required = false) outputFile: String?) {
+    fun wsdl(@Parameters(description = [ "Converts a WSDL file to a $APPLICATION_NAME file" ], index = "0") path: String, @Option(names = ["-o", "--output"], description = [ "Write the contract into this file"], required = false) outputFile: String?) {
         val inputFile = File(path)
         val inputFileContent = inputFile.readText()
         val wsdlXML = toXMLNode(parseXML(inputFileContent))
@@ -59,7 +59,7 @@ class ImportCommand : Callable<Unit> {
         when (outputFile) {
             null -> {
                 if(inputFile.name.endsWith(".wsdl")) {
-                    val filename = inputFile.nameWithoutExtension + ".qontract"
+                    val filename = inputFile.nameWithoutExtension + ".$CONTRACT_EXTENSION"
                     File(filename).writeText(gherkin)
                     println("Written to file $filename")
                 }
@@ -73,7 +73,7 @@ class ImportCommand : Callable<Unit> {
                     it.isDirectory -> {
                         val dir = it.absoluteFile.parentFile.path.removeSuffix(File.separator)
                         val name = inputFile.nameWithoutExtension
-                        val extension = QONTRACT_EXTENSION
+                        val extension = CONTRACT_EXTENSION
 
                         val outputPath = "$dir${File.separator}$name.$extension"
                         val withTag = fileWithTag(File(outputPath), tag)

@@ -15,7 +15,7 @@ Thanks for being willing to contribute!
 > pull requests from branches on your fork. To do this, run:
 >
 > ```
-> git remote add upstream https://github.com/qontract/qontract.git
+> git remote add upstream https://github.com/znsio/specmatic.git
 > git fetch upstream
 > git branch --set-upstream-to=upstream/master master
 > ```
@@ -26,21 +26,28 @@ Thanks for being willing to contribute!
 > can make all of your pull request branches based on this `master` branch.
 > Whenever you want to update your version of `master`, do a regular `git pull`.
 
+## Analaysing Performance Issues
+
+1.  Run specmacticJMS.sh. This file runs specmatic with Prometheus Java Agent and publishes metrics on localhost:8089/metrics
+2.  To monitor the above metrics in Grafana setup [Perfiz](https://github.com/znsio/perfiz#detailed-tutorial) (Steps 1 and 2)
+3.  Run ```$PERFIZ_HOME/perfiz.sh start``` and navigate to localhost:3000 to view Grafana Dashboard
+4.  Run ```$PERFIZ_HOME/perfiz.sh stop``` to stop Grafana and other Docker Containers
+
 ## Committing and Pushing changes
 
 Please make sure to run the tests before you commit your changes by using the command
 
 ```./gradlew clean test```
 
-Generate Fat Jar. The `qontract.jar` should be available in `<projectRoot>/application/build/libs`
+Generate Fat Jar. The `specmatic.jar` should be available in `<projectRoot>/application/build/libs`
 
 ```./gradlew clean build shadowJar```
 
-Run the `qontract.jar` to verify any commands as part of your changes.
+Run the `specmatic.jar` to verify any commands as part of your changes.
 
 ## Help needed
 
-Please checkout the [the open issues][issues]
+Please checkout the [the open issues](https://github.com/znsio/specmatic/issues?q=is%3Aopen+is%3Aissue)
 
 Also, please watch the repo and respond to questions/bug reports/feature
 requests! Thanks!

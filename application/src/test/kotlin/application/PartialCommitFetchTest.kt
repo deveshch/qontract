@@ -4,13 +4,14 @@ import io.mockk.every
 import io.mockk.mockk
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import run.qontract.core.git.GitCommand
+import `in`.specmatic.core.CONTRACT_EXTENSION
+import `in`.specmatic.core.git.GitCommand
 
 internal class PartialCommitFetchTest {
     @Test
     fun `it should return the commit if no error occurs`() {
-        val relativeContractPath = "file.qontract"
-        val contractPath = "/path/to/file.qontract"
+        val relativeContractPath = "file.$CONTRACT_EXTENSION"
+        val contractPath = "/path/to/file.$CONTRACT_EXTENSION"
 
         val commitHash = "12345"
         val content = "data"
@@ -27,8 +28,8 @@ internal class PartialCommitFetchTest {
 
     @Test
     fun `it should return an error if one occurs`() {
-        val relativeContractPath = "file.qontract"
-        val contractPath = "/path/to/file.qontract"
+        val relativeContractPath = "file.$CONTRACT_EXTENSION"
+        val contractPath = "/path/to/file.$CONTRACT_EXTENSION"
 
         val commitHash = "12345"
 
@@ -39,7 +40,7 @@ internal class PartialCommitFetchTest {
         val outcome = partial(commitHash)
 
         assertThat(outcome.errorMessage).isEqualTo("""Could not load 12345:$contractPath because of error:
-Error: Error""")
+Error""")
         assertThat(outcome.result).isNull()
     }
 }

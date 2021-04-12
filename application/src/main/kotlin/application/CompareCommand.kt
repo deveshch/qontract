@@ -1,11 +1,12 @@
 package application
 
+import `in`.specmatic.core.Feature
+import `in`.specmatic.core.parseGherkinStringToFeature
+import `in`.specmatic.core.pattern.ContractException
+import `in`.specmatic.core.testBackwardCompatibility
+import `in`.specmatic.core.utilities.readFile
 import picocli.CommandLine.Command
 import picocli.CommandLine.Parameters
-import run.qontract.core.Feature
-import run.qontract.core.pattern.ContractException
-import run.qontract.core.testBackwardCompatibility
-import run.qontract.core.utilities.readFile
 import java.util.concurrent.Callable
 
 @Command(name = "compare",
@@ -40,8 +41,8 @@ private fun showPath(path1: String, path2: String) {
 }
 
 private fun mutualCompatibility(path1: String, path2: String): Pair<Boolean, Boolean> {
-    val behaviour1 = Feature(readFile(path1))
-    val behaviour2 = Feature(readFile(path2))
+    val behaviour1 = parseGherkinStringToFeature(readFile(path1))
+    val behaviour2 = parseGherkinStringToFeature(readFile(path2))
 
     showPath(path1, path2)
     val successWith1To2 = backwardCompatible(behaviour1, behaviour2)
